@@ -4,3 +4,7 @@ version = "0.1.0"
 authors = ["isra17 <isra017@gmail.com>"]
 
 [dependencies]
+bitflags = "0.7.0"
+elf = { git = "https://github.com/isra17/rust-elf.git", rev = "b48cf9088bfcbab11b9f71d2450d89d11a787b0a" }
+matches = "0.1.2"
+unicorn = "0.3.0"
