@@ -1,6 +1,7 @@
 use std;
 use std::io;
 use unicorn;
+use emulator;
 
 
 #[derive(Debug)]
@@ -10,6 +11,7 @@ pub enum Error {
     UnsupportedArch(String),
     ParserError(String),
     EmuError(unicorn::Error),
+    MapAlreadyExists(emulator::MemMap),
 }
 
 impl std::convert::From<io::Error> for Error {

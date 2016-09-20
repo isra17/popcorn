@@ -63,7 +63,7 @@ pub fn load(file: &mut std::fs::File) -> Result<emulator::Emulator, Error> {
         data_buf.resize(phdr.filesz as usize, 0);
         try!(file.read_exact(data_buf.as_mut_slice()));
 
-        try!(emu.mem_write(phdr.vaddr, data_buf.as_slice()));
+        try!(emu.engine().mem_write(phdr.vaddr, data_buf.as_slice()));
     }
     Ok(emu)
 }

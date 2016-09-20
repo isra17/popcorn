@@ -15,6 +15,7 @@ pub struct MemMap {
 
 pub type MemMaps = HashMap<String, MemMap>;
 
+/// Main struct to manage and run emulation.
 pub struct Emulator {
     mappings: MemMaps,
     arch: Arch,
@@ -22,6 +23,8 @@ pub struct Emulator {
 }
 
 impl Emulator {
+    /// Create a new emulator instance for a given architecture from
+    /// `arch_info`.
     pub fn new(arch_info: Arch) -> Result<Emulator, Error> {
         let Arch(arch, mode) = arch_info;
         Ok(Emulator {
@@ -31,29 +34,44 @@ impl Emulator {
         })
     }
 
+    /// Return a reference to engine architecture information.
+    pub fn arch(&self) -> &Arch {
+        &self.arch
+    }
+
+    /// Return a reference to the emulation engine.
+    pub fn engine(&self) -> &unicorn::Unicorn {
+        &self.uc
+    }
+
+    // Memory operation.
+
+    /// Create a new memory map in the emulator from `mapping`. It will be
+    /// possible to read and write the emulator memory afterward.
     pub fn mem_map(&mut self, mapping: MemMap) -> Result<(), Error> {
         let map_key = match mapping.name {
             Some(ref name) => name.clone(),
             None => format!(".anonymous[0x{:x}]", mapping.addr),
         };
+
+        if self.mappings.contains_key(&map_key) {
+            return Err(Error::MapAlreadyExists(mapping));
+        }
+
         try!(self.uc.mem_map(mapping.addr, mapping.size as usize, mapping.flags));
         self.mappings.insert(map_key, mapping);
         Ok(())
     }
 
-    pub fn mem_write(&mut self, addr: u64, data: &[u8]) -> Result<(), Error> {
-        try!(self.uc.mem_write(addr, data));
-        Ok(())
-    }
-
+    /// Return a reference to the HashMap that contains the mappings
+    /// information.
     pub fn mappings(&self) -> &MemMaps {
         &self.mappings
     }
 
-    pub fn arch(&self) -> Arch {
-        self.arch.clone()
-    }
+    // Emulation helper.
 
+    /// Call a function at a given address `addr` with the arguments `args`.
     pub fn call_addr(&mut self, _addr: u64, _args: &[u64]) -> Result<u64, Error> {
         Ok(0)
     }
