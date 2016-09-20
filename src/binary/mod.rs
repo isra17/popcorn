@@ -1,31 +1,10 @@
 pub mod elf;
 
 use emulator;
-use std;
+use error::Error;
 use std::fs::File;
 use std::io::{Read, Seek, SeekFrom};
 use std::path::Path;
-
-#[derive(Debug)]
-pub enum Error {
-    IoError(std::io::Error),
-    ParserError(String),
-    UnsupportedArch(String),
-    EmulatorError(emulator::Error),
-    UnknownFile,
-}
-
-impl std::convert::From<std::io::Error> for Error {
-    fn from(e: std::io::Error) -> Self {
-        Error::IoError(e)
-    }
-}
-
-impl std::convert::From<emulator::Error> for Error {
-    fn from(e: emulator::Error) -> Self {
-        Error::EmulatorError(e)
-    }
-}
 
 pub fn load<P: AsRef<Path>>(path: P) -> Result<Box<emulator::Emulator>, Error> {
     let mut file = try!(File::open(path).map_err(|e| Error::IoError(e)));
@@ -36,7 +15,7 @@ pub fn load<P: AsRef<Path>>(path: P) -> Result<Box<emulator::Emulator>, Error> {
     let binary_file = try!(if elf::check_magic(&file_magic) {
         elf::load(&mut file)
     } else {
-        Err(Error::UnknownFile)
+        Err(Error::UnknownFormat)
     });
     Ok(Box::new(binary_file))
 }
@@ -54,15 +33,16 @@ fn aligned_addr(addr: u64, page_size: u64) -> u64 {
 
 #[cfg(test)]
 mod tests {
+    use error::Error;
     use binary;
 
     #[test]
     fn test_load() {
         use std::path::PathBuf;
         assert!(matches!(binary::load(PathBuf::from("path/does/not/exists")),
-                         Err(binary::Error::IoError(_))));
+                         Err(Error::IoError(_))));
         assert!(matches!(binary::load(PathBuf::from("./tests/samples/test.txt")),
-                         Err(binary::Error::UnknownFile)));
+                         Err(Error::UnknownFormat)));
         binary::load(PathBuf::from("./tests/samples/cat")).expect("Load sample");
     }
 

@@ -22,7 +22,7 @@ mod tests {
     fn happy_path_test() {
         // Load and parse a binary file. The loader detect the environment and
         // architecture targeted by the binary.
-        let emulator = PopcornEngine::new(PathBuf::from("./tests/samples/cat"))
+        let mut emulator = PopcornEngine::new(PathBuf::from("./tests/samples/cat"))
             .expect("Failed to load binary");
 
         // Setup a simulated environment to mock I/O done by the program.

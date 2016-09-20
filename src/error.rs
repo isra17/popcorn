@@ -1,36 +1,25 @@
-use binary;
 use std;
 use std::io;
-use std::io::Write;
+use unicorn;
 
 
 #[derive(Debug)]
 pub enum Error {
-    LoadError(binary::Error),
+    IoError(io::Error),
+    UnknownFormat,
+    UnsupportedArch(String),
+    ParserError(String),
+    EmuError(unicorn::Error),
 }
 
-impl std::convert::From<binary::Error> for Error {
-    fn from(e: binary::Error) -> Self {
-        Error::LoadError(e)
+impl std::convert::From<io::Error> for Error {
+    fn from(e: io::Error) -> Self {
+        Error::IoError(e)
     }
 }
 
-pub trait LogError<E> {
-    fn log_err<'a, F>(self, f: F) -> Self where F: FnOnce(&E) -> String;
-}
-
-impl<T, E: std::fmt::Debug> LogError<E> for Result<T, E> {
-    fn log_err<'a, F>(self, f: F) -> Self
-        where F: FnOnce(&E) -> String
-    {
-        match self {
-            Ok(_) => (),
-            Err(ref e) => {
-                let mut stderr = io::stderr();
-                stderr.write(format!("{}: {:?}", f(e), e).as_bytes()).unwrap();
-                stderr.write(&[0xa]).unwrap();
-            }
-        };
-        return self;
+impl std::convert::From<unicorn::Error> for Error {
+    fn from(e: unicorn::Error) -> Self {
+        Error::EmuError(e)
     }
 }

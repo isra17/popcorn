@@ -8,7 +8,7 @@ pub struct PopcornEngine {
     emulator: Box<emulator::Emulator>,
 }
 
-pub struct ExecResult {}
+pub struct ExecResult(u64);
 
 impl PopcornEngine {
     pub fn new<PathRef: AsRef<Path>>(path: PathRef) -> Result<PopcornEngine, Error> {
@@ -17,8 +17,9 @@ impl PopcornEngine {
 
     pub fn setup_env(&self) {}
 
-    pub fn run(&self, args: &[&str]) -> Result<ExecResult, ()> {
-        Ok(ExecResult {})
+    pub fn run(&mut self, _args: &[&str]) -> Result<ExecResult, Error> {
+        let result = try!(self.emulator.call_addr(0, &[]));
+        Ok(ExecResult(result))
     }
 }
 
