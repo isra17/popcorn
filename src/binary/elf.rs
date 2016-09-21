@@ -1,3 +1,4 @@
+use arch;
 use elf;
 use std;
 use unicorn;
@@ -22,11 +23,11 @@ fn prot_from(flag: elf::types::ProgFlag) -> unicorn::unicorn_const::Protection {
     return prot;
 }
 
-fn arch_from(arch: elf::types::Machine) -> Result<emulator::Arch, Error> {
+fn arch_from(arch: elf::types::Machine) -> Result<arch::Arch, Error> {
     use unicorn::unicorn_const::{Arch, Mode};
     match arch {
         // elf::types::EM_386 => Ok(Arch(Arch::X86, Mode::MODE_32)),
-        elf::types::EM_X86_64 => Ok(emulator::Arch(Arch::X86, Mode::MODE_64)),
+        elf::types::EM_X86_64 => Ok(try!(arch::Arch::new(Arch::X86, Mode::MODE_64))),
         _ => Err(Error::UnsupportedArch(format!("{:?}", arch))),
     }
 }

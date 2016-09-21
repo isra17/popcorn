@@ -1,9 +1,8 @@
+use arch::Arch;
 use error::Error;
+use stack;
 use std::collections::HashMap;
 use unicorn;
-
-#[derive(Clone)]
-pub struct Arch(pub unicorn::unicorn_const::Arch, pub unicorn::unicorn_const::Mode);
 
 #[derive(Debug)]
 pub struct MemMap {
@@ -25,12 +24,12 @@ pub struct Emulator {
 impl Emulator {
     /// Create a new emulator instance for a given architecture from
     /// `arch_info`.
-    pub fn new(arch_info: Arch) -> Result<Emulator, Error> {
-        let Arch(arch, mode) = arch_info;
+    pub fn new(arch: Arch) -> Result<Emulator, Error> {
+        let uc = try!(unicorn::Unicorn::new(arch.arch, arch.mode));
         Ok(Emulator {
             mappings: Default::default(),
-            arch: arch_info,
-            uc: try!(unicorn::Unicorn::new(arch, mode)),
+            arch: arch,
+            uc: uc,
         })
     }
 
@@ -44,8 +43,12 @@ impl Emulator {
         &self.uc
     }
 
-    // Memory operation.
+    /// Return an helper accessor to the emulator stack.
+    pub fn stack(&mut self) -> stack::Stack {
+        stack::Stack::new(self)
+    }
 
+    // Memory operation.
     /// Create a new memory map in the emulator from `mapping`. It will be
     /// possible to read and write the emulator memory afterward.
     pub fn mem_map(&mut self, mapping: MemMap) -> Result<(), Error> {

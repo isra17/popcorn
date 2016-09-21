@@ -1,14 +1,19 @@
 #[macro_use]
 extern crate bitflags;
+extern crate byteorder;
 extern crate elf;
 #[macro_use]
 extern crate matches;
 extern crate unicorn;
 
+pub mod arch;
 pub mod binary;
+pub mod calling_convention;
 pub mod emulator;
 pub mod error;
 pub mod popcorn_engine;
+pub mod registers;
+mod stack;
 
 pub use emulator::Emulator;
 pub use error::Error;
